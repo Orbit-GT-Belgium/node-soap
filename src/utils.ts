@@ -75,6 +75,7 @@ export function parseMTOMResp(payload: Buffer, boundary: string): IMTOMAttachmen
   let headerValue = '';
   let data: Buffer;
   let partIndex = 0;
+  let arrayBuffer = [];
   const parser = new MultipartParser();
 
   parser.initWithBoundary(boundary);
@@ -84,6 +85,7 @@ export function parseMTOMResp(payload: Buffer, boundary: string): IMTOMAttachmen
       headers: {},
     };
     data = Buffer.from('');
+    arrayBuffer = [];
   };
 
   parser.onHeaderField = (b: Buffer, start: number, end: number) => {
@@ -101,11 +103,12 @@ export function parseMTOMResp(payload: Buffer, boundary: string): IMTOMAttachmen
   parser.onHeadersEnd = () => {};
 
   parser.onPartData = (b: Buffer, start: number, end: number) => {
-      data = Buffer.concat([data, b.slice(start, end)]);
+      // data = Buffer.concat([data, b.slice(start, end)]);
+      arrayBuffer.push(b.slice(start, end));
   };
 
   parser.onPartEnd = () => {
-    resp.parts[partIndex].body = data;
+    resp.parts[partIndex].body = Buffer.concat(arrayBuffer);
     partIndex++;
   };
 
